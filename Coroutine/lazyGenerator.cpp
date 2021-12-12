@@ -1,22 +1,20 @@
-// lazyGenerator.cpp
-#include <iostream>
-#include <vector>
+#include "lazyGenerator.hpp"
 
-generator<int> generatorForNumbers(int begin, int inc = 1) {
-    for (int i = begin; ; i += inc) { // (4)
-        co_yield i; // (3)
+#include <iostream>
+
+generator<int> gen()
+{
+    for(int i=0;i<5;i++)
+    {
+        co_yield i;
     }
 }
 
-int main() {
-    const auto numbers = generatorForNumbers(-10); // (1)
-    for (int i = 1; i <= 20; ++i) { // (5)
-        std::cout << numbers << " ";
+int main()
+{
+    for(auto&& val : gen())
+    {
+        std::cout << val << std::endl;
     }
-    std::cout << "\n";
-
-    for (auto n : generatorForNumbers(0, 5)) { // (2)
-        std::cout << n << " ";
-    }
-    std::cout << "\n";
+    return 0;
 }
