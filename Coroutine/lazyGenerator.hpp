@@ -3,9 +3,13 @@
 
 #include <coroutine>
 
+// класс генератоа 
 template<class T> struct generator
 {
+    // класс итератора . 
     class iterator;
+
+    // 
     struct promise_type;
     using coro_handle = std::coroutine_handle<promise_type>;
 
@@ -15,12 +19,14 @@ template<class T> struct generator
         
     }
 
+    //  Метод передает управление сопрограмме
     bool resume()
     {
         if(!handle.done())handle.resume();
         return !handle.done();
     }
 
+    // провека на готовность
     bool ready()
     {
         return handle.done();
@@ -35,6 +41,7 @@ template<class T> struct generator
     {
         return handle ? (handle.resume(), !handle.done()) : false;
     }
+    
     
     T get_value()
     {
@@ -58,6 +65,7 @@ template<class T> struct generator
     {
         return iterator(this);
     }
+
 
     class iterator
     {
@@ -108,7 +116,9 @@ template<class T> struct generator
 
         }
     };
+
 private:
+    //
     coro_handle handle;    
 };
 

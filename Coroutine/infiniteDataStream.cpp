@@ -7,8 +7,12 @@ template <typename T>
 struct Generator {
     struct promise_type;
     using handle_type = std::coroutine_handle<promise_type>;
+    //Создание генератора
     Generator(handle_type h) : coro(h) {}                       // (3)
+    
+    
     handle_type coro;
+    
     std::shared_ptr<T> value;
     ~Generator() {
         if (coro) {
@@ -28,25 +32,31 @@ struct Generator {
     T getValue() {
         return coro.promise().current_value;
     }
+    // Запрос следующего значения и возврат флага, если генератор исчерпал себя
     bool next() {                                               // (5)
         coro.resume();
         return not coro.done();
     }
+
+    //  Создание promise объекта
     struct promise_type {
         promise_type() = default;                               // (1)
         ~promise_type() = default;
+        //Вызов promise.initial_suspend(), т.к. генератор "ленивый", следовательно, suspend_always
         auto initial_suspend() {                                // (4)
             return std::suspend_always{};
         }
         auto final_suspend()  noexcept {
             return std::suspend_always{};
         }
+        // Вызов promise.get_return_object() и сохранение результата в локальной переменной
         auto get_return_object() {                              // (2)
             return Generator{handle_type::from_promise(*this)};
         }
         auto return_void() {
             return std::suspend_never{};
         }
+        // Действие на co_yield, после чего будет доступно следующее значение
         auto yield_value(T value) {                             // (6)
             current_value = value;
             return std::suspend_always{};
@@ -69,6 +79,7 @@ int main(int argc , char* argv[]) {
     auto gen = getNext();
     for (int i = 0; i <= 10; ++i) {
         gen.next();
+        // Получение следующего значения
         std::cout << " " << gen.getValue();                     // (7)
     }
     std::cout << "\ngetNext(100, -10):";
